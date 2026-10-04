@@ -71,8 +71,9 @@
   .badge .pip::after { content:""; position:absolute; inset:-3px; border-radius:50%; border:1px solid var(--wa); opacity:.55; animation:ping 2.2s ease-out infinite; }
   @keyframes ping { 0%{transform:scale(.6);opacity:.6} 100%{transform:scale(1.7);opacity:0} }
 
-  .hl { font-size:23px; font-weight:900; line-height:1.35; color:var(--ink); }
-  .proof { font-size:13px; line-height:1.6; color:var(--muted); font-weight:700; margin:2px 0 13px; }
+  .hl { font-size:23px; font-weight:900; line-height:1.35; color:var(--ink); margin-bottom:13px; }
+  /* sits under the site link, at the owner's word (2026-10-04) */
+  .proof { font-size:13px; line-height:1.6; color:var(--muted); font-weight:700; margin:0 0 2px; }
   .proof b { color:var(--brand); font-weight:900; }
 
   /* ===== the buttons — each one is a whole-row tap target, all visible at once ===== */
@@ -128,6 +129,47 @@
     font-size:13px; font-weight:800; color:var(--brand-ink); text-decoration:none; }
   .site span[dir="ltr"] { text-decoration:underline; text-underline-offset:3px; }
 
+  /* ===== the subscribe popup =====
+     A sheet from the bottom on a phone (where the thumb is), a centred card on
+     a wide screen. Closed, it is out of the way by visibility, not by removal,
+     so opening it is a class and the slide can run. */
+  html.locked, html.locked body { overflow:hidden; }
+  .pop { position:fixed; inset:0; z-index:20; display:flex; align-items:flex-end; justify-content:center;
+    visibility:hidden; pointer-events:none; transition:visibility 0s linear .3s; }
+  .pop.open { visibility:visible; pointer-events:auto; transition-delay:0s; }
+  .pop-bg { position:absolute; inset:0; background:rgba(11,16,44,.56); opacity:0; transition:opacity .25s ease; }
+  .pop.open .pop-bg { opacity:1; }
+  .sheet { position:relative; width:100%; max-width:420px; background:#fff; border-radius:24px 24px 0 0;
+    padding:10px 16px calc(18px + env(safe-area-inset-bottom)); text-align:right;
+    box-shadow:0 -18px 50px -18px rgba(11,16,44,.55);
+    transform:translateY(105%); transition:transform .3s cubic-bezier(.16,1,.3,1); }
+  .pop.open .sheet { transform:none; }
+  .sheet .grab { width:42px; height:5px; border-radius:99px; background:var(--line-2); margin:0 auto 14px; }
+  .sh-x { position:absolute; top:2px; left:4px; width:44px; height:44px; border:0; background:none; color:var(--muted);
+    display:grid; place-items:center; cursor:pointer; }
+  .sh-x svg { width:20px; height:20px; }
+  .sh-head { display:flex; align-items:center; gap:11px; padding:6px 0 6px; }
+  .sh-head .ic { flex:none; width:46px; height:46px; border-radius:13px; display:grid; place-items:center;
+    font-size:23px; line-height:1; background:var(--soft); border:1px solid var(--line-2); }
+  .sh-head .tx { flex:1; min-width:0; display:flex; flex-direction:column; align-items:flex-start; }
+  .sh-head .t { font-size:17px; font-weight:900; line-height:1.3; color:var(--ink); }
+  .sh-head .s { font-size:12.5px; font-weight:600; color:var(--muted); margin-top:2px; line-height:1.4; }
+  .sh-btn { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; min-height:56px;
+    margin-top:10px; padding:8px 14px; border-radius:16px; font-size:16px; font-weight:800; line-height:1.3;
+    text-decoration:none; color:#fff; transition:transform .12s; }
+  .sh-btn:active { transform:scale(.98); }
+  .sh-btn svg { width:23px; height:23px; flex:none; }
+  .sh-btn.b-wa  { background:linear-gradient(150deg,#22b358,var(--wa-2)); box-shadow:0 14px 24px -16px rgba(18,138,62,.9); }
+  .sh-btn.b-buy { background:linear-gradient(150deg,var(--brand-2) 0%,var(--brand) 55%,var(--brand-ink) 100%);
+    box-shadow:0 14px 24px -16px rgba(27,70,245,.8); }
+  @media (min-width:520px){
+    .pop { align-items:center; }
+    .sheet { border-radius:24px; padding-bottom:18px; opacity:0; transform:translateY(24px);
+      transition:transform .3s cubic-bezier(.16,1,.3,1), opacity .2s ease; box-shadow:0 30px 70px -24px rgba(11,16,44,.6); }
+    .pop.open .sheet { opacity:1; }
+    .sheet .grab { visibility:hidden; }
+  }
+
   /* social media squares — below the card */
   .socials-wrap { width:100%; max-width:420px; margin:16px auto 0; text-align:center; }
   .soc-label { font-size:12px; font-weight:800; color:var(--muted); margin-bottom:10px; letter-spacing:.02em; }
@@ -161,6 +203,7 @@
   }
   @media (prefers-reduced-motion:reduce){
     .badge .pip::after,.lnk.feat::after,.badge,.hl,.proof,.links > *{ animation:none!important; }
+    .pop,.pop-bg,.sheet{ transition:none!important; }
   }
 </style>
 </head>
@@ -173,11 +216,11 @@
     <div class="inner">
       <span class="badge"><span class="pip"></span> نستقبل طلاباً جدداً الآن</span>
       <h1 class="hl">اختر دورتك وابدأ اليوم</h1>
-      <p class="proof">انضم لأكثر من <b dir="ltr">5,000</b> مستفيد من زد لفل</p>
 
       <!-- courses + WhatsApp, rendered from the config below -->
       <nav class="links" id="links"></nav>
       <a class="site" id="site" data-k="site" href="https://zedlevel.com/"><span>الموقع الرسمي</span> <span dir="ltr">zedlevel.com</span></a>
+      <p class="proof">انضم لأكثر من <b dir="ltr">5,000</b> مستفيد من زد لفل</p>
     </div>
 
     <div class="foot">© <span id="year">2026</span> أكاديمية <b>ZedLevel</b> لتعليم الإنجليزية</div>
@@ -189,6 +232,22 @@
     <div class="socials" id="socials"></div>
   </div>
   </div><!-- /.page -->
+
+  <!-- the subscribe popup — one, filled in from whichever course was tapped -->
+  <div class="pop" id="pop" aria-hidden="true">
+    <div class="pop-bg" data-close></div>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="popT">
+      <div class="grab"></div>
+      <button class="sh-x" type="button" data-close aria-label="إغلاق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <div class="sh-head">
+        <span class="ic" id="popIc"></span>
+        <span class="tx"><span class="t" id="popT"></span><span class="s" id="popS"></span></span>
+        <span class="pr" id="popP"></span>
+      </div>
+      <a class="sh-btn b-wa" id="popWa" data-k="pop-wa" href="#"></a>
+      <a class="sh-btn b-buy" id="popBuy" data-k="pop-buy" href="#"></a>
+    </div>
+  </div>
 
 <script>
   /* ============================================================
@@ -209,28 +268,38 @@
   };
 
   /* The courses, in the website's own order (التأسيس، المحادثة، المستويات).
-     Each row opens that course's page on zedlevel.com — the page with the
-     details, the price and the buy button.
+     Tapping a row opens the popup below it in this file: subscribe through
+     WhatsApp, or go straight to that course's purchase page on the store.
 
-     ⚠️ NAMES AND PRICES ARE COPIED from the website (zedlevelWEBALL:
-     config/courses.ts and config/site.ts → pricing). Nothing keeps them in
-     step: change a price there and it must be changed here by hand.
-     price:"" hides the price; enabled:false hides the row.
+     ⚠️ NAMES, PRICES AND PURCHASE LINKS ARE COPIED from the website
+     (zedlevelWEBALL: config/courses.ts, and config/site.ts → pricing, salla).
+     Nothing keeps them in step: change one there and it must be changed here
+     by hand. price:"" hides the price; enabled:false hides the row.
 
-     To send a row to WhatsApp instead of the website, give it
-     wa:"the message to pre-fill" — that wins over `path`. */
+     `buy` is the course's product page on salla.sa. A course with no `buy`
+     has nothing to choose between, so its row opens WhatsApp directly. */
   const COURSES = [
     { key:"a0", emoji:"📘", name:"دورة التأسيس الصحيح", desc:"للمبتدئين، تبدأ من الصفر",
-      price:"199", unit:"", path:"/courses/foundation/", feat:true, tag:"ابدأ من هنا", enabled:true },
+      price:"199", unit:"", buy:"https://salla.sa/zedlevel/foundational/p1682632353",
+      feat:true, tag:"ابدأ من هنا", enabled:true },
     { key:"conversation", emoji:"🗣️", name:"دورة المحادثة", desc:"تتكلم مع مدرسين أجانب",
-      price:"249", unit:"شهريًا", path:"/courses/conversation/", enabled:true },
+      price:"249", unit:"شهريًا", buy:"https://salla.sa/zedlevel/conversation/p346030337", enabled:true },
     { key:"levels", emoji:"📊", name:"دورة المستويات", desc:"من A1 إلى B2، درجة درجة",
-      price:"399", unit:"لكل دورة", path:"/courses/levels/", enabled:true }
+      price:"399", unit:"لكل دورة", buy:"https://salla.sa/zedlevel/levels/p1559235509", enabled:true }
     /* future ready-to-add examples:
-    ,{ key:"accent", emoji:"🇺🇸", name:"دورة اللكنة الأمريكية", desc:"American accent", price:"", unit:"", path:"/courses/accent/", enabled:false }
-    ,{ key:"step",   emoji:"🎓", name:"دورة STEP",            desc:"اختبار ستيب",     price:"", unit:"", wa:"...", enabled:false }
+    ,{ key:"accent", emoji:"🇺🇸", name:"دورة اللكنة الأمريكية", desc:"American accent", price:"", unit:"", buy:"", enabled:false }
+    ,{ key:"step",   emoji:"🎓", name:"دورة STEP",            desc:"اختبار ستيب",     price:"", unit:"", buy:"", enabled:false }
     */
   ];
+
+  /* The popup a course row opens — the owner's two ways to subscribe, in the
+     owner's order and wording (2026-10-04). `waMsg` is the line the website's
+     own /whatsapp page sends; {course} becomes the row's name. */
+  const POPUP = {
+    wa:    "اشترك من خلال الواتساب",
+    buy:   "اشترك من الموقع مباشرة",
+    waMsg: "أبغى أشترك في {course} 🚀"
+  };
 
   /* the WhatsApp row under the courses */
   const WHATSAPP = { enabled:true, title:"اسألنا على واتساب", sub:"نحدد مستواك ونقترح الدورة المناسبة" };
@@ -243,6 +312,7 @@
     tg:       '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.6 20c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.3-.1-.5-.6-.2L6.2 13 1.4 11.5c-1-.3-1-1 .2-1.5L20.6 2.6c.9-.3 1.6.2 1.3 1.7z"/></svg>',
     /* drawn, not typed: «‹» is a mirrored character, and in an RTL line it comes out pointing backwards */
     chev:     '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    cart:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h2.6l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.3a1.6 1.6 0 0 0 1.6-1.2l1.5-6.8H6.2"/></svg>',
     /* the Saudi riyal mark — the same glyph the website prints after a price */
     riyal:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="ريال سعودي"><path d="m20 19.5-5.5 1.2"/><path d="M14.5 4v11.22a1 1 0 0 0 1.242.97L20 15.2"/><path d="m2.978 19.351 5.549-1.363A2 2 0 0 0 10 16V2"/><path d="M20 10 4 13.5"/></svg>'
   };
@@ -269,23 +339,34 @@
 
   /* --- render --- */
   function waLink(msg){ return "https://wa.me/"+CONFIG.whatsappNumber+"?text="+encodeURIComponent(msg); }
-  /* utm_* is right HERE and wrong on the website's buy buttons: this is the
-     visitor's way IN to the site, which is what the tags are for. A tag on a
-     button inside the site would overwrite the source they arrived with. */
-  function siteLink(path, key){
-    return CONFIG.websiteUrl + path + "?utm_source=" + FROM + "&utm_medium=bio&utm_campaign=bio_link&utm_content=" + key;
+  /* utm_* is right HERE and wrong on the website's buy buttons: this page is
+     where the visit BEGINS, which is what the tags are for. A tag on a button
+     inside the site would overwrite the source the visitor arrived with — and
+     for the same reason, a visitor who reached THIS page on a tagged link (an
+     ad pointed here) is sent on untagged, so the ad keeps the sale. */
+  var ARRIVED_TAGGED = /[?&](utm_source|ttclid|gclid|fbclid)=/.test(location.search);
+  function tags(key){
+    return ARRIVED_TAGGED ? "" : "utm_source=" + FROM + "&utm_medium=bio&utm_campaign=bio_link&utm_content=" + key;
+  }
+  function withQuery(url, q){ return q ? url + (url.indexOf("?") < 0 ? "?" : "&") + q : url; }
+  function siteLink(path, key){ return withQuery(CONFIG.websiteUrl + path, tags(key)); }
+  /* zl_src is the website's own label for "which button sent this buyer to the store" */
+  function buyLink(c){ return withQuery(withQuery(c.buy, "zl_src=bio"), tags(c.key)); }
+  function subscribeLink(c){ return waLink(POPUP.waMsg.replace("{course}", c.name)); }
+  function priceHtml(c){
+    return '<span class="n"><span dir="ltr">'+c.price+'</span>'+ICONS.riyal+'</span>'+
+           (c.unit ? '<span class="u">'+c.unit+'</span>' : '');
   }
 
   /* No target="_blank" anywhere on this page. It is opened inside TikTok's own
      browser, where a link that asks for a new window is the one kind that can
      fail without a trace; a plain link always navigates, and Back returns here. */
-  var rows = COURSES.filter(function(c){ return c.enabled; }).map(function(c){
-    var href = c.wa ? waLink(c.wa) : siteLink(c.path, c.key);
-    var price = c.price
-      ? '<span class="pr"><span class="n"><span dir="ltr">'+c.price+'</span>'+ICONS.riyal+'</span>'+
-        (c.unit ? '<span class="u">'+c.unit+'</span>' : '')+'</span>'
-      : ICONS.chev;
-    return '<a class="lnk'+(c.feat?' feat':'')+'" data-k="'+c.key+'" href="'+href+'">'+
+  var SHOWN = COURSES.filter(function(c){ return c.enabled; });
+  var rows = SHOWN.map(function(c){
+    /* still a real link under the popup: the purchase page, if the tap is ever not handled */
+    var href = c.buy ? buyLink(c) : subscribeLink(c);
+    var price = c.price ? '<span class="pr">'+priceHtml(c)+'</span>' : ICONS.chev;
+    return '<a class="lnk'+(c.feat?' feat':'')+'" data-k="'+c.key+'"'+(c.buy ? ' data-pop="'+c.key+'" aria-haspopup="dialog"' : '')+' href="'+href+'">'+
              '<span class="ic">'+c.emoji+'</span>'+
              '<span class="tx">'+(c.tag ? '<span class="tag">'+c.tag+'</span>' : '')+
                '<span class="t">'+c.name+'</span><span class="s">'+c.desc+'</span></span>'+
@@ -308,10 +389,61 @@
 
   document.getElementById("year").textContent = new Date().getFullYear();
 
+  /* --- the subscribe popup ---
+     Both choices are real links that the visitor taps themselves. That matters
+     for WhatsApp: a phone hands a tapped link to the app, and may not do the
+     same for a page that redirects on its own.
+
+     Opening the popup adds a history entry, so the phone's Back button closes
+     the popup instead of leaving the page — inside TikTok, leaving the page is
+     leaving for good. The entry also means Back from the purchase page lands
+     on the popup, with the WhatsApp choice still one tap away. */
+  var pop = document.getElementById("pop"), openKey = null;
+  function courseByKey(k){ for (var i = 0; i < SHOWN.length; i++) if (SHOWN[i].key === k) return SHOWN[i]; return null; }
+  function showPop(c){
+    document.getElementById("popIc").textContent = c.emoji;
+    document.getElementById("popT").textContent = c.name;
+    document.getElementById("popS").textContent = c.desc;
+    document.getElementById("popP").innerHTML = c.price ? priceHtml(c) : "";
+    var wa = document.getElementById("popWa"), buy = document.getElementById("popBuy");
+    wa.href = subscribeLink(c);  wa.innerHTML = ICONS.wa + '<span>' + POPUP.wa + '</span>';
+    buy.href = buyLink(c);       buy.innerHTML = ICONS.cart + '<span>' + POPUP.buy + '</span>';
+    openKey = c.key;
+    pop.classList.add("open"); pop.setAttribute("aria-hidden", "false");
+    document.documentElement.classList.add("locked");
+  }
+  function hidePop(){
+    openKey = null;
+    pop.classList.remove("open"); pop.setAttribute("aria-hidden", "true");
+    document.documentElement.classList.remove("locked");
+  }
+  function popState(){ try { return history.state && history.state.pop; } catch (e) { return null; } }
+  function closePop(){
+    hidePop();
+    if (popState()) { try { history.back(); } catch (e) {} }
+  }
+  document.getElementById("links").addEventListener("click", function(e){
+    var a = e.target && e.target.closest ? e.target.closest("a[data-pop]") : null;
+    var c = a ? courseByKey(a.getAttribute("data-pop")) : null;
+    if (!c) return;
+    e.preventDefault();
+    showPop(c);
+    try { history.pushState({ pop:c.key }, ""); } catch (err) {}
+  });
+  pop.addEventListener("click", function(e){
+    if (e.target && e.target.closest && e.target.closest("[data-close]")) closePop();
+  });
+  document.addEventListener("keydown", function(e){ if (e.key === "Escape" && openKey) closePop(); });
+  function syncPop(){ var c = courseByKey(popState()); if (c) showPop(c); else hidePop(); }
+  window.addEventListener("popstate", syncPop);
+  syncPop();   // a reload on the popup's history entry shows the popup again
+
   /* --- measuring ---
      One page view per visit, one event per tap. In GA4: taps ÷ views is this
-     page's click rate, and `link` says which button took the tap. WhatsApp uses
-     the website's own event name so it lands beside the site's WhatsApp taps. */
+     page's click rate, and `link` says which button took the tap. A course row
+     now only OPENS the popup (bio_click); the choice made inside it is the
+     real exit, and uses the website's own event names so it lands beside the
+     site's numbers: whatsapp_click, and salla_click for the purchase page. */
   window.dataLayer = window.dataLayer || [];
   function gtag(){ dataLayer.push(arguments); }
   if (CONFIG.ga4Id) {
@@ -325,6 +457,8 @@
       if (!a) return;
       var k = a.getAttribute("data-k");
       if (k === "whatsapp") gtag("event", "whatsapp_click", { source:"bio" });
+      else if (k === "pop-wa") gtag("event", "whatsapp_click", { source:"bio", course:openKey });
+      else if (k === "pop-buy") gtag("event", "salla_click", { course:openKey, source:"bio" });
       else gtag("event", "bio_click", { link:k, source:"bio" });
     });
   }
