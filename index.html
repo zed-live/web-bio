@@ -87,8 +87,26 @@
   .lnk:active { transform:scale(.98); }
   @media (hover:hover){ .lnk:hover { border-color:var(--brand); box-shadow:0 12px 26px -14px rgba(27,70,245,.4); } }
   .lnk .ic { flex:none; width:44px; height:44px; border-radius:13px; display:grid; place-items:center;
-    font-size:22px; line-height:1; background:var(--soft); border:1px solid var(--line-2); }
+    line-height:1; color:var(--brand); background:rgba(27,70,245,.07); border:1px solid rgba(27,70,245,.14); }
   .lnk .ic svg { width:25px; height:25px; }
+  /* the course icons: drawn, so they look the same on every phone */
+  .abc { font-size:14.5px; font-weight:900; letter-spacing:-.02em; line-height:1; color:var(--brand); }
+  .ic svg.flag, .sh-head .ic svg.flag { width:28px; height:19px; border-radius:3px; box-shadow:0 0 0 1px rgba(17,22,52,.14); }
+
+  /* in place of a price, on a course that has not opened yet */
+  .soon { flex:none; font-size:12px; font-weight:800; line-height:1.5; color:#7a5304; white-space:nowrap;
+    background:rgba(242,186,64,.18); border:1px solid rgba(242,186,64,.5); padding:3px 11px; border-radius:999px; }
+
+  /* «شاهد الكل» and the rows it reveals */
+  .more { display:flex; flex-direction:column; gap:10px; }
+  .more[hidden] { display:none; }
+  .see-all { display:flex; align-items:center; justify-content:center; gap:6px; width:100%; min-height:46px; padding:8px 14px;
+    font-family:inherit; font-size:14.5px; font-weight:800; color:var(--brand-ink); cursor:pointer;
+    background:rgba(27,70,245,.05); border:1.5px solid rgba(27,70,245,.2); border-radius:16px;
+    transition:transform .12s, background .2s; }
+  .see-all:active { transform:scale(.98); }
+  .see-all svg { width:18px; height:18px; transform:rotate(-90deg); transition:transform .25s; }
+  .see-all[aria-expanded="true"] svg { transform:rotate(90deg); }
   .lnk .tx { flex:1; min-width:0; display:flex; flex-direction:column; align-items:flex-start; }
   .lnk .t { font-size:15.5px; font-weight:800; line-height:1.3; }
   .lnk .s { font-size:12.5px; font-weight:600; color:var(--muted); margin-top:2px; line-height:1.4; }
@@ -105,7 +123,8 @@
   .lnk.feat { background:linear-gradient(150deg,var(--brand-2) 0%,var(--brand) 55%,var(--brand-ink) 100%);
     border-color:transparent; color:#fff; min-height:82px; padding:13px 13px;
     box-shadow:0 18px 30px -16px rgba(27,70,245,.75); }
-  .lnk.feat .ic { background:#fff; border-color:transparent; width:48px; height:48px; font-size:24px; }
+  .lnk.feat .ic { background:#fff; border-color:transparent; width:48px; height:48px; }
+  .lnk.feat .abc { font-size:15.5px; }
   .lnk.feat .t { font-size:16.5px; font-weight:900; }
   .lnk.feat .s { color:rgba(255,255,255,.88); }
   .lnk.feat .tag { font-size:10.5px; font-weight:800; line-height:1.5; color:#fff; background:rgba(255,255,255,.18);
@@ -150,7 +169,8 @@
   .sh-x svg { width:20px; height:20px; }
   .sh-head { display:flex; align-items:center; gap:11px; padding:6px 0 6px; }
   .sh-head .ic { flex:none; width:46px; height:46px; border-radius:13px; display:grid; place-items:center;
-    font-size:23px; line-height:1; background:var(--soft); border:1px solid var(--line-2); }
+    line-height:1; color:var(--brand); background:rgba(27,70,245,.07); border:1px solid rgba(27,70,245,.14); }
+  .sh-head .ic svg { width:25px; height:25px; }
   .sh-head .tx { flex:1; min-width:0; display:flex; flex-direction:column; align-items:flex-start; }
   .sh-head .t { font-size:17px; font-weight:900; line-height:1.3; color:var(--ink); }
   .sh-head .s { font-size:12.5px; font-weight:600; color:var(--muted); margin-top:2px; line-height:1.4; }
@@ -194,6 +214,9 @@
   .badge, .hl, .proof, .links > * { animation:riseIn .42s cubic-bezier(.16,1,.3,1) both; }
   .links > *:nth-child(1){ animation-delay:.03s } .links > *:nth-child(2){ animation-delay:.07s }
   .links > *:nth-child(3){ animation-delay:.11s } .links > *:nth-child(4){ animation-delay:.15s }
+  /* the revealed rows rise in each time «شاهد الكل» opens them */
+  .more > * { animation:riseIn .36s cubic-bezier(.16,1,.3,1) both; }
+  .more > *:nth-child(2){ animation-delay:.05s }
 
   @media (max-width:374px){
     body{padding-inline:9px} .inner{padding:12px 10px 12px}
@@ -202,7 +225,8 @@
     .pr .n{font-size:16px} .lnk.feat .pr .n{font-size:16px; padding:4px 8px}
   }
   @media (prefers-reduced-motion:reduce){
-    .badge .pip::after,.lnk.feat::after,.badge,.hl,.proof,.links > *{ animation:none!important; }
+    .badge .pip::after,.lnk.feat::after,.badge,.hl,.proof,.links > *,.more > *{ animation:none!important; }
+    .see-all svg{ transition:none!important; }
     .pop,.pop-bg,.sheet{ transition:none!important; }
   }
 </style>
@@ -267,8 +291,9 @@
     ga4Id:          "G-FK29FYMZRP"
   };
 
-  /* The courses, in the website's own order (التأسيس، المحادثة، المستويات).
-     Tapping a row opens the popup below it in this file: subscribe through
+  /* The courses, in the owner's order (2026-10-04): التأسيس and المحادثة always
+     shown, then «شاهد الكل», which reveals every row marked more:true.
+     Tapping a course opens the popup below it in this file: subscribe through
      WhatsApp, or go straight to that course's purchase page on the store.
 
      ⚠️ NAMES, PRICES AND PURCHASE LINKS ARE COPIED from the website
@@ -276,21 +301,25 @@
      Nothing keeps them in step: change one there and it must be changed here
      by hand. price:"" hides the price; enabled:false hides the row.
 
-     `buy` is the course's product page on salla.sa. A course with no `buy`
-     has nothing to choose between, so its row opens WhatsApp directly. */
+     icon   — a key in ICONS below.
+     buy    — the course's product page on salla.sa.
+     soon   — not open yet: shows «قريبًا» in place of a price, and a tap opens
+              WhatsApp with the website's «نبّهني» line (POPUP.notifyMsg).
+     A course with no `buy` and no `soon` opens WhatsApp with POPUP.waMsg. */
   const COURSES = [
-    { key:"a0", emoji:"📘", name:"دورة التأسيس الصحيح", desc:"للمبتدئين، تبدأ من الصفر",
+    { key:"a0", icon:"abc", name:"دورة التأسيس الصحيح", desc:"للمبتدئين، تبدأ من الصفر",
       price:"199", unit:"", buy:"https://salla.sa/zedlevel/foundational/p1682632353",
       feat:true, tag:"ابدأ من هنا", enabled:true },
-    { key:"conversation", emoji:"🗣️", name:"دورة المحادثة", desc:"تتكلم مع مدرسين أجانب",
+    { key:"conversation", icon:"chat", name:"دورة المحادثة", desc:"تتكلم مع مدرسين أجانب",
       price:"249", unit:"شهريًا", buy:"https://salla.sa/zedlevel/conversation/p346030337", enabled:true },
-    { key:"levels", emoji:"📊", name:"دورة المستويات", desc:"من A1 إلى B2، درجة درجة",
-      price:"399", unit:"لكل دورة", buy:"https://salla.sa/zedlevel/levels/p1559235509", enabled:true }
-    /* future ready-to-add examples:
-    ,{ key:"accent", emoji:"🇺🇸", name:"دورة اللكنة الأمريكية", desc:"American accent", price:"", unit:"", buy:"", enabled:false }
-    ,{ key:"step",   emoji:"🎓", name:"دورة STEP",            desc:"اختبار ستيب",     price:"", unit:"", buy:"", enabled:false }
-    */
+    { key:"levels", icon:"levels", name:"دورة المستويات", desc:"من A1 إلى B2، درجة درجة",
+      price:"399", unit:"لكل دورة", buy:"https://salla.sa/zedlevel/levels/p1559235509", more:true, enabled:true },
+    { key:"accent", icon:"flag", name:"دورة الأكسنت الأمريكي", desc:"اضبط نطقك بلهجة أمريكية",
+      soon:true, more:true, enabled:true }
   ];
+
+  /* the button between the two groups — the owner's wording */
+  const SEE_ALL = { open:"شاهد الكل", close:"عرض أقل" };
 
   /* The popup a course row opens — the owner's two ways to subscribe, in the
      owner's order and wording (2026-10-04). `waMsg` is the line the website's
@@ -298,7 +327,9 @@
   const POPUP = {
     wa:    "اشترك من خلال الواتساب",
     buy:   "اشترك من الموقع مباشرة",
-    waMsg: "أبغى أشترك في {course} 🚀"
+    waMsg: "أبغى أشترك في {course} 🚀",
+    /* the website's own msgNotify line, for a course marked soon */
+    notifyMsg: "أبغى تنبهوني عند فتح {course} 🔔"
   };
 
   /* the WhatsApp row under the courses */
@@ -312,6 +343,12 @@
     tg:       '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.6 20c-.2 1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.4-5 9.1-8.2c.4-.3-.1-.5-.6-.2L6.2 13 1.4 11.5c-1-.3-1-1 .2-1.5L20.6 2.6c.9-.3 1.6.2 1.3 1.7z"/></svg>',
     /* drawn, not typed: «‹» is a mirrored character, and in an RTL line it comes out pointing backwards */
     chev:     '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+    /* course icons. ABC: the course where English starts. */
+    abc:      '<span class="abc" dir="ltr">ABC</span>',
+    chat:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 10a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 14.286V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/><path d="M20 9a2 2 0 0 1 2 2v10.286a.71.71 0 0 1-1.212.502l-2.202-2.202A2 2 0 0 0 17.172 19H10a2 2 0 0 1-2-2v-1"/></svg>',
+    levels:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18"/><path d="M6 20v-4"/><path d="M10.5 20v-7.5"/><path d="M15 20V9"/><path d="M19.5 20V5"/></svg>',
+    /* a drawn flag: an emoji flag shows as the letters «US» on Windows */
+    flag:     '<svg class="flag" viewBox="0 0 28 19" aria-hidden="true"><rect width="28" height="19" fill="#fff"/><g fill="#c8102e"><rect y="0" width="28" height="2.71"/><rect y="5.43" width="28" height="2.71"/><rect y="10.86" width="28" height="2.71"/><rect y="16.29" width="28" height="2.71"/></g><rect width="12" height="10.86" fill="#1f3a93"/><g fill="#fff"><circle cx="2.5" cy="2.3" r=".8"/><circle cx="6" cy="2.3" r=".8"/><circle cx="9.5" cy="2.3" r=".8"/><circle cx="4.25" cy="5.4" r=".8"/><circle cx="7.75" cy="5.4" r=".8"/><circle cx="2.5" cy="8.5" r=".8"/><circle cx="6" cy="8.5" r=".8"/><circle cx="9.5" cy="8.5" r=".8"/></g></svg>',
     cart:     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h2.6l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.3a1.6 1.6 0 0 0 1.6-1.2l1.5-6.8H6.2"/></svg>',
     /* the Saudi riyal mark — the same glyph the website prints after a price */
     riyal:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="ريال سعودي"><path d="m20 19.5-5.5 1.2"/><path d="M14.5 4v11.22a1 1 0 0 0 1.242.97L20 15.2"/><path d="m2.978 19.351 5.549-1.363A2 2 0 0 0 10 16V2"/><path d="M20 10 4 13.5"/></svg>'
@@ -353,6 +390,7 @@
   /* zl_src is the website's own label for "which button sent this buyer to the store" */
   function buyLink(c){ return withQuery(withQuery(c.buy, "zl_src=bio"), tags(c.key)); }
   function subscribeLink(c){ return waLink(POPUP.waMsg.replace("{course}", c.name)); }
+  function notifyLink(c){ return waLink(POPUP.notifyMsg.replace("{course}", c.name)); }
   function priceHtml(c){
     return '<span class="n"><span dir="ltr">'+c.price+'</span>'+ICONS.riyal+'</span>'+
            (c.unit ? '<span class="u">'+c.unit+'</span>' : '');
@@ -362,17 +400,30 @@
      browser, where a link that asks for a new window is the one kind that can
      fail without a trace; a plain link always navigates, and Back returns here. */
   var SHOWN = COURSES.filter(function(c){ return c.enabled; });
-  var rows = SHOWN.map(function(c){
-    /* still a real link under the popup: the purchase page, if the tap is ever not handled */
-    var href = c.buy ? buyLink(c) : subscribeLink(c);
-    var price = c.price ? '<span class="pr">'+priceHtml(c)+'</span>' : ICONS.chev;
-    return '<a class="lnk'+(c.feat?' feat':'')+'" data-k="'+c.key+'"'+(c.buy ? ' data-pop="'+c.key+'" aria-haspopup="dialog"' : '')+' href="'+href+'">'+
-             '<span class="ic">'+c.emoji+'</span>'+
+  function courseRow(c){
+    /* a course to buy opens the popup, and is still a real link under it: the
+       purchase page, if the tap is ever not handled */
+    var pops = c.buy && !c.soon;
+    var href = c.soon ? notifyLink(c) : pops ? buyLink(c) : subscribeLink(c);
+    var end = c.soon ? '<span class="soon">قريبًا</span>'
+            : c.price ? '<span class="pr">'+priceHtml(c)+'</span>' : ICONS.chev;
+    return '<a class="lnk'+(c.feat?' feat':'')+'" data-k="'+c.key+'"'+
+             (pops ? ' data-pop="'+c.key+'" aria-haspopup="dialog"' : '')+
+             (c.soon ? ' data-notify="'+c.key+'"' : '')+' href="'+href+'">'+
+             '<span class="ic">'+(ICONS[c.icon] || '')+'</span>'+
              '<span class="tx">'+(c.tag ? '<span class="tag">'+c.tag+'</span>' : '')+
                '<span class="t">'+c.name+'</span><span class="s">'+c.desc+'</span></span>'+
-             price+
+             end+
            '</a>';
-  });
+  }
+  var rows = SHOWN.filter(function(c){ return !c.more; }).map(courseRow);
+  var moreRows = SHOWN.filter(function(c){ return c.more; }).map(courseRow);
+  if (moreRows.length) {
+    rows.push('<div class="more" id="more" hidden>'+moreRows.join("")+'</div>');
+    rows.push('<button class="see-all" id="seeAll" type="button" data-k="more" aria-expanded="false" aria-controls="more">'+
+                '<span>'+SEE_ALL.open+'</span>'+ICONS.chev+
+              '</button>');
+  }
   if (WHATSAPP.enabled) {
     rows.push('<a class="lnk wa" data-k="whatsapp" href="'+waLink(CONFIG.whatsappMsg)+'">'+
                 '<span class="ic">'+ICONS.wa+'</span>'+
@@ -389,6 +440,16 @@
 
   document.getElementById("year").textContent = new Date().getFullYear();
 
+  /* --- «شاهد الكل» --- reveals the rows marked more:true, and folds them away again */
+  var seeAll = document.getElementById("seeAll"), moreBox = document.getElementById("more");
+  function setMore(open){
+    if (!seeAll || !moreBox || open === !moreBox.hasAttribute("hidden")) return;
+    if (open) moreBox.removeAttribute("hidden"); else moreBox.setAttribute("hidden", "");
+    seeAll.setAttribute("aria-expanded", open ? "true" : "false");
+    seeAll.querySelector("span").textContent = open ? SEE_ALL.close : SEE_ALL.open;
+  }
+  if (seeAll) seeAll.addEventListener("click", function(){ setMore(moreBox.hasAttribute("hidden")); });
+
   /* --- the subscribe popup ---
      Both choices are real links that the visitor taps themselves. That matters
      for WhatsApp: a phone hands a tapped link to the app, and may not do the
@@ -401,7 +462,7 @@
   var pop = document.getElementById("pop"), openKey = null;
   function courseByKey(k){ for (var i = 0; i < SHOWN.length; i++) if (SHOWN[i].key === k) return SHOWN[i]; return null; }
   function showPop(c){
-    document.getElementById("popIc").textContent = c.emoji;
+    document.getElementById("popIc").innerHTML = ICONS[c.icon] || "";
     document.getElementById("popT").textContent = c.name;
     document.getElementById("popS").textContent = c.desc;
     document.getElementById("popP").innerHTML = c.price ? priceHtml(c) : "";
@@ -409,6 +470,8 @@
     wa.href = subscribeLink(c);  wa.innerHTML = ICONS.wa + '<span>' + POPUP.wa + '</span>';
     buy.href = buyLink(c);       buy.innerHTML = ICONS.cart + '<span>' + POPUP.buy + '</span>';
     openKey = c.key;
+    /* a reload on the popup's history entry starts folded; the row stays findable behind it */
+    if (c.more) setMore(true);
     pop.classList.add("open"); pop.setAttribute("aria-hidden", "false");
     document.documentElement.classList.add("locked");
   }
@@ -443,7 +506,9 @@
      page's click rate, and `link` says which button took the tap. A course row
      now only OPENS the popup (bio_click); the choice made inside it is the
      real exit, and uses the website's own event names so it lands beside the
-     site's numbers: whatsapp_click, and salla_click for the purchase page. */
+     site's numbers: whatsapp_click, and salla_click for the purchase page.
+     A course marked soon sends notify_click, the site's «نبّهني» event.
+     «شاهد الكل» counts only the taps that open it, as bio_click {link:"more"}. */
   window.dataLayer = window.dataLayer || [];
   function gtag(){ dataLayer.push(arguments); }
   if (CONFIG.ga4Id) {
@@ -453,10 +518,13 @@
     gtag("js", new Date());
     gtag("config", CONFIG.ga4Id);
     document.addEventListener("click", function(e){
-      var a = e.target && e.target.closest ? e.target.closest("a[data-k]") : null;
+      /* runs after the element's own handler, so «شاهد الكل» already reads its new state */
+      var a = e.target && e.target.closest ? e.target.closest("[data-k]") : null;
       if (!a) return;
       var k = a.getAttribute("data-k");
-      if (k === "whatsapp") gtag("event", "whatsapp_click", { source:"bio" });
+      if (k === "more") { if (a.getAttribute("aria-expanded") === "true") gtag("event", "bio_click", { link:"more", source:"bio" }); }
+      else if (a.hasAttribute("data-notify")) gtag("event", "notify_click", { course:k, source:"bio" });
+      else if (k === "whatsapp") gtag("event", "whatsapp_click", { source:"bio" });
       else if (k === "pop-wa") gtag("event", "whatsapp_click", { source:"bio", course:openKey });
       else if (k === "pop-buy") gtag("event", "salla_click", { course:openKey, source:"bio" });
       else gtag("event", "bio_click", { link:k, source:"bio" });
