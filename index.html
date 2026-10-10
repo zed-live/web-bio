@@ -318,7 +318,12 @@
        ⚠️ Only a REAL end date goes here — one the store will honour. A
        deadline that quietly rolls over is the fastest way to teach visitors
        that nothing this page says is urgent. */
-    offerEnds:      ""
+    offerEnds:      "",
+    /* Added as the LAST LINE of every WhatsApp message this page opens, so a
+       chat that started here can be told apart from one that started on the
+       website (whose messages are otherwise word for word the same). Search
+       the chats for it. "" adds nothing. */
+    waTag:          "#bio"
   };
 
   /* The courses, in the owner's order (2026-10-04): التأسيس and المحادثة always
@@ -414,7 +419,12 @@
   })();
 
   /* --- render --- */
-  function waLink(msg){ return "https://wa.me/"+CONFIG.whatsappNumber+"?text="+encodeURIComponent(msg); }
+  /* encodeURIComponent is what keeps the tag: a raw "#" in a link starts the
+     URL's fragment, and WhatsApp would receive the message cut off before it */
+  function waLink(msg){
+    var text = CONFIG.waTag ? msg + "\n" + CONFIG.waTag : msg;
+    return "https://wa.me/"+CONFIG.whatsappNumber+"?text="+encodeURIComponent(text);
+  }
   /* utm_* is right HERE and wrong on the website's buy buttons: this page is
      where the visit BEGINS, which is what the tags are for. A tag on a button
      inside the site would overwrite the source the visitor arrived with — and
