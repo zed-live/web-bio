@@ -319,10 +319,11 @@
        deadline that quietly rolls over is the fastest way to teach visitors
        that nothing this page says is urgent. */
     offerEnds:      "",
-    /* Added as the LAST LINE of every WhatsApp message this page opens, so a
-       chat that started here can be told apart from one that started on the
-       website (whose messages are otherwise word for word the same). Search
-       the chats for it. "" adds nothing. */
+    /* Added as the LAST LINE of the general WhatsApp message (the «محتار؟»
+       row), so a chat that started here can be told apart from one that
+       started on the website, whose message is otherwise the same word for
+       word. The course messages carry their own marker instead: a "#" before
+       the course name (POPUP below). "" adds nothing. */
     waTag:          "#bio"
   };
 
@@ -364,14 +365,18 @@
   const SEE_ALL = { open:"شاهد الكل", close:"عرض أقل" };
 
   /* The popup a course row opens — the owner's two ways to subscribe, in the
-     owner's order and wording (2026-10-04). `waMsg` is the line the website's
-     own /whatsapp page sends; {course} becomes the row's name. */
+     owner's order and wording (2026-10-04). {course} becomes the row's name.
+
+     The messages are the owner's exact text (2026-10-10): «أبغى أشترك في
+     #دورة التأسيس الصحيح». The "#" before the course name is what marks a
+     chat as coming from this page — the website sends the same sentence
+     without it. The notify line follows the same shape. */
   const POPUP = {
     wa:    "اشترك من خلال الواتساب",
     buy:   "اشترك من الموقع مباشرة",
-    waMsg: "أبغى أشترك في {course} 🚀",
-    /* the website's own msgNotify line, for a course marked soon */
-    notifyMsg: "أبغى تنبهوني عند فتح {course} 🔔"
+    waMsg: "أبغى أشترك في #{course}",
+    /* for a course marked soon */
+    notifyMsg: "أبغى تنبهوني عند فتح #{course}"
   };
 
   /* the WhatsApp row under the courses */
@@ -419,12 +424,10 @@
   })();
 
   /* --- render --- */
-  /* encodeURIComponent is what keeps the tag: a raw "#" in a link starts the
+  /* encodeURIComponent is what keeps every "#": a raw "#" in a link starts the
      URL's fragment, and WhatsApp would receive the message cut off before it */
-  function waLink(msg){
-    var text = CONFIG.waTag ? msg + "\n" + CONFIG.waTag : msg;
-    return "https://wa.me/"+CONFIG.whatsappNumber+"?text="+encodeURIComponent(text);
-  }
+  function waLink(msg){ return "https://wa.me/"+CONFIG.whatsappNumber+"?text="+encodeURIComponent(msg); }
+  function tagged(msg){ return CONFIG.waTag ? msg + "\n" + CONFIG.waTag : msg; }
   /* utm_* is right HERE and wrong on the website's buy buttons: this page is
      where the visit BEGINS, which is what the tags are for. A tag on a button
      inside the site would overwrite the source the visitor arrived with — and
@@ -522,7 +525,7 @@
               '</button>');
   }
   if (WHATSAPP.enabled) {
-    rows.push('<a class="lnk wa" data-k="whatsapp" href="'+waLink(CONFIG.whatsappMsg)+'">'+
+    rows.push('<a class="lnk wa" data-k="whatsapp" href="'+waLink(tagged(CONFIG.whatsappMsg))+'">'+
                 '<span class="ic">'+ICONS.wa+'</span>'+
                 '<span class="tx"><span class="t">'+WHATSAPP.title+'</span><span class="s">'+WHATSAPP.sub+'</span></span>'+
                 ICONS.chev+
